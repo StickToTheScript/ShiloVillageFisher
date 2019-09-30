@@ -1,0 +1,843 @@
+program ShiloVillageFlyFisher;
+{$DEFINE SMART8}
+{$i srl/srl.simba}
+{$i sps/sps.simba}
+{$i ObjectDTM\ObjDTMInclude.simba}
+
+{*******************************************************************************
+
+     *Shilo Village Fly Fisher*
+
+     *Verson: 1.2*
+
+     *Script Writer*: StickToTheScript*
+
+     *This is a Fly Fishing script that runs in the little town of Shilo Village.*
+     *You can freely let me know if there is anything you would like to see added*
+     *to the script. I will take note of it and see what I can do.*
+
+
+  ***** Make Sure SMART 8 is installed!*****
+  ***** Download it here: https://github.com/BenLand100/SMART*****
+  **If SMART8 is not installed, just remove the '8' in the define smart section above**
+
+     Instructions:
+     1. Stand inside the Shilo Village Bank with feathers in invintory and fishing rod either in toolbelt or invintory.
+     2. Fill out Declare Players.
+     3. Press the little green arrow and let it Run!
+
+     ***IF POWERFISHING, MAKE SURE YOUR FEATHERS ARE IN SLOT #1!!!!!!!!!***
+
+     *Remember to check it after a while to make sure everything is ok.*
+
+     **Recommended that you choose a less populated world so that the fishing is
+        faster and better!
+
+    **Recommended that you make one of your XP bars to fishing. Keeps track of your XP!**
+
+
+
+      ***Please Report Bugs/Errors/Anything on the Thread***
+
+      **Please remember to include if you are using SMART 7 or 8 when you post on the thread**
+      **It would be very useful to know**
+
+      *To Do List:*
+      *- LET ME KNOW!*
+
+
+      *Thanks for Trying the script!*
+
+
+
+
+*******************************************************************************}
+
+var
+ x, y, i, h, BeginXP, Fish, FishXP, XPGain, LoadsDone, FishPerHour, LoadsPerHour,
+ XPPerHour, Salmon, Trout, TimeGone, PixelsMoving: Integer;
+
+ FromBank, ToBankEast, ToEastFromWest, ToWestFromEast, ToBankWest, ToBankNorth,
+ NorthToWest: TPointArray;
+
+ status: string;
+
+{******************************************************************************}
+
+//SETUP BEGINS------------------------------------------------------SETUP BEGINS
+Const
+ SRLStats_Username = '';   //Fill This out if you want.
+ SRLStats_Password = '';   //Fill This out if you want.
+
+ Bank = True; //Change to false if you would like to PowerFish (Not go to bank!)
+
+ {******************************************************************************}
+
+procedure DeclarePlayers; //FILL THIS OUT!!!!!!
+begin
+  HowManyPlayers := 1;
+  NumberOfPlayers(HowManyPlayers);
+  CurrentPlayer := 0;
+
+  Players[0].Name := ''; // Username
+  Players[0].Pass := ''; // Password
+  Players[0].Nick := ''; // 3-4 lowercase letters from username; used for random event detection
+  Players[0].Pin := ''; // Leave blank if the player doesn't have a bank pin
+  Players[0].Active := True; // Set to true if you want to use Player 0
+
+//SETUP ENDS----------------------------------------------------------SETUP ENDS
+
+
+
+
+
+{******************************************************************************}
+
+{DO NOT TOUCH ANYTHING BEYOND THIS POINT UNLESS YOU KNOW WHAT YOU ARE DOING!   }
+
+{******************************************************************************}
+
+
+
+
+
+
+  PixelsMoving:= 1864;  //PLEASE LEAVE THIS!
+end;
+
+{******************************************************************************}
+
+procedure Paths;
+begin
+  FromBank := [Point(231, 254), Point(225, 211), Point(232, 191), Point(252, 181)];
+  ToBankEast := [Point(253, 180), Point(221, 203), Point(217, 230), Point(227, 256)];
+  ToEastFromWest := [Point(170, 190), Point(200, 192), Point(225, 187), Point(246, 183), Point(259, 182)];
+  ToWestFromEast := [Point(253, 182), Point(224, 185), Point(195, 192), Point(169, 189)];
+  ToBankWest := [Point(169, 188), Point(189, 203), Point(205, 222), Point(220, 231), Point(229, 251)];
+  ToBankNorth := [Point(237, 151), Point(206, 143), Point(179, 160), Point(148, 171), Point(152, 196), Point(205, 205), Point(228, 227), Point(227, 251)];
+  NorthToWest := [Point(237, 152), Point(208, 142), Point(178, 156), Point(148, 162), Point(154, 194), Point(195, 194), Point(227, 188), Point(252, 188), Point(253, 180)];
+end;
+
+{******************************************************************************}
+
+procedure CheckSRLStats;
+begin
+    if ((SRLStats_Username= '') and (SRLStats_Password = '')) then
+      begin
+        case MessageBox('No Stats account entered, would you like to register?','SRL Stats',mbYesNoCancel) of
+          mrYes:
+            begin
+              OpenWebPage('http://stats.villavu.com/register');
+              TerminateScript;
+            end;
+          mrNo:
+            begin
+              SetupSRLStats(837, 'Anonymous', 'omgzz1337l33t');
+              Exit;
+            end;
+          mrCancel: TerminateScript;
+        end;
+      end else
+    SetupSRLStats(837, SRLStats_Username, SRLStats_Password);
+end;
+
+{******************************************************************************}
+
+procedure AntiBan;
+
+  begin
+    if(not(LoggedIn))then
+    Exit;
+    FindNormalRandoms;
+
+  case Random(250) of
+
+   0:
+      begin
+        writeLn('Doing AntiBan #0 (Hover on Fishing Level)');
+        HoverSkill('Fishing', false);
+        wait(2453+Random(432));
+        GameTab(Tab_Inv);
+      end;
+
+   1:
+      begin
+        writeLn('Doing Antiban #1 (Picking Up Mouse)');
+        PickUpMouse;
+      end;
+
+   2:
+      begin
+        writeLn('Doing AntiBan #2 (Changing Directions)')
+        MakeCompass('N');
+        wait(100+random(133));
+        MakeCompass('S');
+        wait(50+random(133));
+        MakeCompass('N');
+        FindNormalRandoms;
+      end;
+
+   3:
+      begin
+        writeLn('Doing AntiBan #3 (Moving Mouse)');
+        MMouse(50,100,25,25);
+      end;
+
+    4:
+      begin
+        writeLn('Doing AntiBan #4 (Moving Mouse)');
+        MMouse(81,292,24,24);
+      end;
+
+    5:
+      begin
+        writeLn('Doing AntiBan #5 (Moving Mouse)');
+        MMouse(581,341,25,25);
+      end;
+
+    6:
+      begin
+        writeLn('Doing AntiBan #6 (Moving Mouse)');
+        MMouse(0,0,500,500);
+      end;
+    7:
+      Begin
+        writeLn('Doing AntiBan #7 (Random Right Click)');
+        RandomRClick;
+      End;
+    8:
+      Begin
+        writeLn('Doing AntiBan #8 (Hover Random Skill)');
+        HoverSkill('Random', False);
+        GameTab(Tab_Inv);
+        MakeCompass('N');
+      End;
+    9:
+      Begin
+        writeLn('Doing AntiBan #9 (Bored Human)');
+        BoredHuman;
+        MakeCompass('N');
+      End;
+    10:
+      Begin
+        writeLn('Doing AntiBan #10 (Sleep And Move Mouse)');
+        SleepAndMoveMouse(RandomRange(400,500));
+        MakeCompass('N');
+      End;
+    11:
+      Begin
+        writeLn('Doing AntiBan #11 (Random Right Click)');
+        Wait(RandomRange(250, 1500));
+        RandomRClick;
+      End;
+    12:
+      Begin
+        writeLn('Doing AntiBan #12 (Wait...)');
+        Wait(RandomRange(250, 4000));
+      End;
+    13:
+      begin
+        writeLn('Doing AntiBan #13 (Hover Fishing)');
+        HoverSkill(skill_cooking,false);
+      end;
+    14:
+      begin
+        writeLn('Doing AntiBan #14 (Checking Friends)');
+        GameTab(Tab_Friends);
+      end;
+    15:
+      begin
+        writeLn('Doing AntiBan #15 (Picking Up Mouse)');
+        PickUpMouse;
+      end;
+
+    16:
+      begin
+        writeLn('Doing AntiBan #16 (Random Compass)');
+        MakeCompass('rand');
+        MakeCompass('N');
+      end;
+
+    17:
+      begin
+        writeLn('Doing AntiBan #17 (Wait...)');
+        Wait(5000+random(2000));
+      end;
+    18:
+      begin
+        writeLn('Doing AntiBan #18 (Stats Tab)');
+        GameTab(Tab_Stats);
+        Wait(400 + Random(8000));
+        GameTab(Tab_Inv);
+      end;
+    19..30:
+      Begin
+        writeLn('Doing AntiBan #19-30 (Bored Human)');
+        BoredHuman;
+        MakeCompass('N');
+      End;
+  end;
+end;
+
+{******************************************************************************}
+
+function NotMoving: Boolean;
+  var
+    retry: integer;
+    pBox: TBox;
+  begin
+    retry := 0;
+    pBox := IntToBox(245, 130, 285, 195);
+    repeat
+      if (AveragePixelShift(pBox, 250, 500) < PixelsMoving) then
+        begin
+          FindNormalRandoms;
+          inc(retry);
+        end else
+          if (AveragePixelShift(pBox, 250, 500) > 160) then
+            begin
+              retry:= 0;
+            end;
+    until (retry = 1);
+    Result:= true;
+    writeln('Not Moving.');
+end;
+
+{******************************************************************************}
+
+function FindBankers: Boolean;
+var
+  TPA : TPointArray;
+  ATPA : T2DPointArray;
+
+begin
+  if OpenBankNPCEx('grey') then
+  begin
+    Writeln('Bank is Open. Thanks OpenBankNPCEx(''grey'')!');
+    wait(randomrange(243, 693));
+    exit;
+  end else
+  begin
+    if not LoggedIn then Exit;
+    FindNormalRandoms;
+
+    SetColorToleranceSpeed(2);
+    SetColorSpeed2Modifiers(0.33, 0.04);
+
+    repeat
+      FindColorsSpiralTolerance(x, y, TPA, 5263700, MSX1, MSY1, MSX2, MSY2, 13);
+      ATPA := SplitTPAEx(TPA, 10, 10);
+
+      h := High(ATPA);
+      for i := 0 to h do
+      begin
+        MiddleTPAEx(ATPA[i], x, y);
+        MMouse(x, y, 4, 4);
+
+        if WaitUpText('ank', 300) then
+        begin
+          Writeln('Found Banker!');
+          Mouse(x, y, 0, 0, False);
+          ChooseOptionMulti(['Bank Ba', 'ank Bak', 'nk Bank'])
+          Result := True;
+          Wait(RandomRange(254,598));
+        end else
+          Writeln('Didn''t find the Bankers.');
+      end;
+    until(BankScreen or PinScreen);
+
+    SetColorSpeed2Modifiers(0.2, 0.2);
+    ColorToleranceSpeed(1);
+  end;
+end;
+
+{******************************************************************************}
+
+function BankSalmon : Boolean;
+var
+  ATPA : T2DPointArray;
+  Salmon, x, y : Integer;
+
+begin
+  FindNormalRandoms;
+  Salmon := DTMFromString('mlwAAAHicY2dgYLjAysBwlxVCH4ViEPsmEGcwMjBEAXEsEGcCcSEQ5wNxMhBPjw8B6mbCioFacWJGPBgKAMOmCi0=');
+  if FindDTM(Salmon, x, y, MIX1, MIY1, MIX2, MIY2) then
+  begin
+    writeln('Found Salmon DTM. Now banking...')
+    Mouse(x, y, 4, 4, False);
+    Wait(251 + Random(500));
+    ChooseOption('All');
+    Wait(251 + Random(500));
+    Result := FindDTM(Salmon, x, y, MIX1, MIY1, MIX2, MIY2);
+
+    if Result then
+    begin
+      Writeln('Moving on to trout..');
+      exit;
+    end
+    else
+ end
+
+ else
+
+  begin
+    if not LoggedIn then Exit;
+      SetColorToleranceSpeed(2);
+      SetColorSpeed2Modifiers(0.07, 1.20);
+      FindobjCustom(x, y, ['salmon', 'aw sal'], [5856897], 10);
+      SortATPAFromFirstPoint(ATPA, Point(MICX, MICY));
+
+      h := High(ATPA);
+      for i := 0 to h do
+      begin
+        MiddleTPAEx(ATPA[i], x, y);
+        MMouse(x, y, 4, 4);
+        if WaitUpText('aw salmon', 300) then
+        begin
+          Writeln('Found Salmon!');
+          Mouse(x, y, 4, 4, False);
+          Wait(251 + Random(500));
+          ChooseOption('All');
+          Wait(251 + Random(500));
+          Result := True;
+          Wait(RandomRange(254,598));
+        end else
+          Writeln('Didn''t find the salmon.');
+       end;
+
+    SetColorSpeed2Modifiers(0.2, 0.2);
+    ColorToleranceSpeed(1);
+  end;
+  FreeDTM(Salmon);
+end;
+
+{******************************************************************************}
+
+function BankTrout : boolean;
+var
+  ATPA : T2DPointArray;
+  x, y : Integer;
+
+begin
+  FindNormalRandoms;
+  Trout := DTMFromString('mrAAAAHichcrBCkBAFIXhf2SkeWimZCGzk9eUNRt/yRK3vtPpdFvgiJAaqHXad23x7rhNAQZ1yipatWjWmHsfq1fJ/BJ+PHcBzDoLSw==');
+  if FindDTM(Trout, x, y, MIX1, MIY1, MIX2, MIY2) then
+  begin
+    writeln('Found Salmon DTM. Now Banking...');
+    Mouse(x, y, 4, 4, False);
+    Wait(251 + Random(500));
+    ChooseOption('All');
+    Wait(251 + Random(500));
+    Result := FindDTM(Trout, x, y, MIX1, MIY1, MIX2, MIY2);
+
+    if Result then
+    begin
+      Writeln('Moving on. Banking Done.')
+      exit;
+    end
+    else
+ end
+
+ else
+
+  begin
+    if not LoggedIn then Exit;
+    FindNormalRandoms;
+
+    SetColorToleranceSpeed(2);
+    SetColorSpeed2Modifiers(0.00, 0.12);
+
+      FindObjCustom(x, y, ['aw tro', 'trout'], [8618889], 9);
+      SortATPAFromFirstPoint(ATPA, Point(MICX, MICY));
+
+      h := High(ATPA);
+      for i := 0 to h do
+      begin
+        MiddleTPAEx(ATPA[i], x, y);
+        MMouse(x, y, 4, 4);
+        if WaitUpText('aw trout', 300) then
+        begin
+          Writeln('Found Trout!');
+          Mouse(x, y, 4, 4, False);
+          Wait(251 + Random(500));
+          ChooseOption('All');
+          Wait(251 + Random(500));
+          Result := True;
+          Wait(RandomRange(254,598));
+        end else
+          Writeln('Didn''t find the trout.');
+      end;
+
+    SetColorSpeed2Modifiers(0.2, 0.2);
+    ColorToleranceSpeed(1);
+
+  end;
+   FreeDTM(Trout);
+end;
+
+{******************************************************************************}
+
+procedure DepositFish;
+begin
+  if PinScreen then
+    begin
+      repeat
+        InPin(Players[0].Pin);
+      until BankScreen or not (LoggedIn);
+      writeln('Bank Opened!')
+    end;
+
+  If BankSalmon then
+  begin
+    writeln('Salmon Banked.');
+  end
+
+  else begin
+    Writeln('Didn''t find Salmon DTM. We are going to continue.');
+  end;
+
+  if BankTrout then
+  begin
+    writeln('Trout Banked.');
+  end else
+
+  begin
+    Writeln('Didn''t find Trout DTM. We are going to continue.');
+  end;
+  Inc(LoadsDone)
+  Fish := Fish + 27
+end;
+
+{******************************************************************************}
+
+procedure WalkToEastSpot;
+begin
+  FindNormalRandoms;
+
+  SPS_BlindWalk(Point(227, 258));
+  //if sps_walkpath(ToBankEast) then
+  begin
+    status := 'walking to the East Spot.';
+    Writeln('Walking to the East Fishing Spot.');
+    repeat
+      wait(RandomRange(465,765));
+    until (NotMoving = True);
+  end
+  //else
+  begin
+    status :='failed walking to the East Spot.';
+    Writeln('Failed walking to the East Fishing Spot.');
+ end;
+end;
+
+{******************************************************************************}
+
+Procedure DropFish;
+Begin
+  DropAllExcept([1]);
+  Inc(LoadsDone)
+  Fish := Fish + 27
+end;
+
+{******************************************************************************}
+
+Procedure CheckInv;
+begin
+    if InvFull then
+    begin
+      If (Bank = True) then
+      begin
+        Writeln('Inv. Full. Now banking...');
+        WalkToEastSpot;
+        FindBankers;
+        DepositFish;
+      end;
+      if (Bank = False) then
+      begin
+        Writeln('Inv. Full. Now dropping...');
+        DropFish;
+      end;
+    end;
+end;
+
+{******************************************************************************}
+
+function isFishing1: Boolean;     //Thanks to BMWxi For letting me modify.
+  var
+    PBox: TBox;
+begin
+  CheckInv;
+  PBox := IntToBox(250, 100, 270, 160);
+  Result := (AveragePixelShift(PBox, 250, 400) > 20);
+  if Result then
+  begin
+    SMART_DrawBoxEx(false, false, intToBox(250, 100, 270, 155), clGreen);
+  end else
+    SMART_DrawBoxEx(false, false, intToBox(250, 100, 270, 155), clRed);
+end;
+
+{******************************************************************************}
+
+function isFishing2: Boolean;    //Thanks to BMWxi For letting me modify.
+  var
+    PBox2: TBox;
+begin
+  CheckInv;
+  PBox2 := IntToBox(250, 190, 270, 250);
+  Result := (AveragePixelShift(PBox2, 250, 400) > 10);
+  if Result then
+  begin
+    SMART_DrawBoxEx(false, false, intToBox(250, 190, 270, 250), clGreen);
+  end else
+    SMART_DrawBoxEx(false, false, intToBox(250, 190, 270, 250), clRed);
+end;
+
+{******************************************************************************}
+
+procedure PlayerBox;   //Thanks to BMWxi For letting me modify.
+  begin
+    SMART_DrawBoxEx(false, false, intToBox(250, 155, 270, 200), clGreen);
+  end;
+
+{******************************************************************************}
+
+Procedure Proggy;
+  begin
+    TimeGone := (GetTimeRunning/1000);
+    FishXP := getXP('Fishing');
+    XPGain := (FishXP-BeginXP);
+    XPPerhour :=(3600*(XPGain))/((TimeGone));
+    LoadsPerhour :=(3600*(LoadsDone))/((TimeGone));
+    FishPerHour := (3600*(Fish))/((TimeGone));
+      begin
+        Writeln('******************************************************************************************');
+        Writeln('*/////////---------- StickToTheScript''s Shilo Village Fly Fisher Version 1.1 ----------\\\\\\\*');
+        Writeln('*/////////----------____________________________________________________----------\\\\\\\*');
+        Writeln('******************************************************************************************');
+        Writeln('- Player: ' + Players[0].Nick + '');
+        Writeln('- Time Running: ' + IntToStr(TimeGone) + ' seconds.');
+        Writeln('- We have done: ' + IntToStr(LoadsDone) + ' Loads / Thats ' + IntToStr(LoadsPerHour) + ' loads per hour');
+        Writeln('- We have gained: ' + IntToStr(XPGain) + ' xp. Which is ' + IntToStr(XPPerHour) + ' xp per hour');
+        Writeln('- We have fished ' + IntToStr(Fish) + ' Salmon & Trout / Thats ' + IntToStr(FishPerHour) + ' Fish Per Hour');
+        Writeln('');
+      end;
+  end;
+
+{******************************************************************************}
+
+procedure WalkToWestSpot;
+begin
+  if not LoggedIn then LoginPlayer;
+  if (not LoggedIn) or (InvFull) or (IsFishing1()) or (IsFishing2()) then Exit;
+  FindNormalRandoms;
+
+  if sps_walkpath(FromBank) then
+  begin
+    status := 'walking to the West Spot.';
+    Writeln('Walking to the West Fishing Spot.');
+    repeat
+      wait(RandomRange(465,765));
+    until (NotMoving = True);
+  end
+  else begin
+    status :='failed walking to the West Spot.';
+    Writeln('Failed walking to the West Fishing Spot.');
+ end;
+end;
+
+{******************************************************************************}
+
+function ClickFishingSpot: Boolean;
+var
+  TPA : TPointArray;
+  ATPA : T2DPointArray;
+
+begin
+  repeat
+  if not LoggedIn then LoginPlayer;
+  if (not LoggedIn) or (InvFull) then Exit;
+  FindNormalRandoms;
+
+  repeat
+  SetColorToleranceSpeed(2);
+  SetColorSpeed2Modifiers(0.18, 1.04);
+
+    FindColorsSpiralTolerance(x, y, TPA, 10919062, MSX1, MSY1, MSX2, MSY2, 4);
+    RAaSTPAEx(TPA,3,3);
+
+
+    SplitTPAExWrap(TPA, 15, 15, ATPA);
+
+    if (Length(ATPA) > 0) then
+      SortATPAFrom(ATPA, Point(MSCX, MSCY))
+    else
+      exit;
+
+    h := High(ATPA);
+    for i := 0 to h do
+    begin
+      MiddleTPAEx(ATPA[i], x, y);
+      MMouse(x, y, 4, 4);
+
+      if WaitUpText('ure', 300) then
+      begin
+        Writeln('Found Fishing Spot!');
+        Mouse(x, y, 0, 0, True);
+        Result := True;
+        Wait(256 + Random(465));
+        Writeln('Clicked Fishing Spot.');
+
+        repeat
+          Antiban;
+          Wait(236 + Random(597));
+          case Random(25) of
+
+          0:
+            begin
+              Proggy;
+            end;
+          end;
+
+        until (not IsFishing1()) and (not IsFishing2());
+
+      end else
+
+        Writeln('Didn''t find the fishing spots.');
+        FindNormalRandoms;
+    end;
+
+  until (not IsFishing1()) and (not IsFishing1());
+
+
+
+  until (not FindColorsSpiralTolerance(x, y, TPA, 10919062, MSX1, MSY1, MSX2, MSY2, 4));
+
+  SetColorSpeed2Modifiers(0.2, 0.2);
+  ColorToleranceSpeed(1);
+end;
+
+{******************************************************************************}
+
+procedure NotFindColor;
+var
+  TPA : TPointArray;
+begin
+  if (not FindColorsSpiralTolerance(x, y, TPA, 10919062, MSX1, MSY1, MSX2, MSY2, 4)) then
+  begin
+   if(not(LoggedIn))then
+    Exit;
+    FindNormalRandoms;
+
+  case Random(2) of
+
+  0:
+  begin
+    if (NotMoving = True) then
+    begin
+      if (not LoggedIn) or (InvFull) then Exit;
+      writeln('Did not find Bubbles. Walking to West Fishing Spot.');
+      SPS_BlindWalk(Point(253, 182));
+      repeat
+        wait(RandomRange(465,765));
+      until (NotMoving = True);
+      ClickFishingSpot;
+    end
+    else begin
+      exit;
+    end;
+  end;
+
+  1:
+    begin
+      if (NotMoving = True) then
+      begin
+        if (not LoggedIn) or (InvFull) then Exit;
+        writeln('Did not find Bubbles. Walking to East Fishing Spot.');
+        SPS_BlindWalk(Point(170, 190));
+        repeat
+          wait(RandomRange(465,765));
+        until (NotMoving = True);
+        ClickFishingSpot;
+      end
+    else begin
+      exit;
+    end;
+  end;
+  end;
+  end;
+end;
+
+{******************************************************************************}
+
+procedure Fishing;
+begin
+
+  FindNormalRandoms;
+
+  WalkToWestSpot;
+
+  if (not IsFishing1()) and (not IsFishing2()) then
+  begin
+    ClickFishingSpot;
+    NotFindColor;
+    CheckInv;
+  end
+
+  else begin
+    Antiban;
+    Wait(RandomRange(254, 638));
+    CheckInv;
+  end;
+end;
+
+{******************************************************************************}
+
+procedure FreeAllDTMs;
+begin
+  FreeDTM(Salmon);
+  FreeDTM(Trout);
+end;
+
+{******************************************************************************}
+
+procedure Setup;
+begin
+  SRL_SIXHOURFIX := TRUE;
+  SMART_FIXSPEED := TRUE;
+
+  Writeln('');
+  Writeln('Your using StickToTheScript''s Shilo Village Fly Fisher Version 1.1!');
+  Writeln('Please report any bugs on the thread along with anything else you wish to say! XD');
+  Writeln('Thanks!');
+  Writeln('');
+
+  SetupSRL;
+  ObjDTM_Setup;
+
+  Paths;
+  SPS_Setup(runescape_other,['SV']);
+
+  DeclarePlayers;
+  CheckSRLStats;
+  LoginPlayer;
+
+  ClickNorth(SRL_ANGLE_HIGH);
+  MakeCompass('N');
+  BeginXP := getXP('Fishing');
+
+  ToggleMoneyPouch(False);
+  ToggleXPBar(True);
+  ToggleActionBar(False);
+end;
+
+{******************************************************************************}
+
+begin
+  ClearDebug;
+  Setup;
+  PlayerBox;
+  repeat
+    Fishing;
+  until AllPlayersInactive;
+  FreeAllDTMs;
+end.
